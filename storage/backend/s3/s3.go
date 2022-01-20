@@ -87,17 +87,15 @@ func (b *Backend) Put(ctx context.Context, p string, r io.Reader) error {
 	in := &s3.PutObjectInput{
 		Bucket: aws.String(b.bucket),
 		Key:    aws.String(p),
-		//TODO
-		//ACL:    aws.String( types.ObjectCannedACL b.acl),
-		Body: r,
+		ACL:    types.ObjectCannedACL(b.acl),
+		Body:   r,
 	}
 
 	uploader := manager.NewUploader(b.client)
 
-	//TODO
-	//if b.encryption != "" {
-	//	in.ServerSideEncryption = aws.String(b.encryption)
-	//}
+	if b.encryption != "" {
+		in.ServerSideEncryption = types.ServerSideEncryption(b.encryption)
+	}
 
 	if _, err := uploader.Upload(ctx, in); err != nil {
 		return fmt.Errorf("put the object, %w", err)
@@ -116,8 +114,7 @@ func (b *Backend) Exists(ctx context.Context, p string) (bool, error) {
 	out, err := b.client.HeadObject(ctx, in)
 	if err != nil {
 		var nsk *types.NoSuchKey
-		//TODO
-		if errors.As(err, *nsk) {
+		if errors.As(err, &nsk) {
 			return false, nil
 		}
 
