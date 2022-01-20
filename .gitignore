@@ -36,3 +36,6 @@ testdata
 # Azurite temp files
 __*__
 __*__.json
+
+# Idea
+.idea/

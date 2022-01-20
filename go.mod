@@ -4,13 +4,17 @@ require (
 	cloud.google.com/go/storage v1.1.0
 	github.com/Azure/azure-storage-blob-go v0.8.0
 	github.com/Azure/go-autorest/autorest/adal v0.8.1 // indirect
-	github.com/aws/aws-sdk-go v1.36.29
+	github.com/aws/aws-sdk-go v1.42.37
+	github.com/aws/aws-sdk-go-v2 v1.13.0
+	github.com/aws/aws-sdk-go-v2/config v1.13.0
+	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.9.0
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.24.0
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dustin/go-humanize v1.0.0
 	github.com/go-kit/kit v0.9.0
 	github.com/go-logfmt/logfmt v0.4.0 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
-	github.com/google/go-cmp v0.4.0
+	github.com/google/go-cmp v0.5.6
 	github.com/pkg/sftp v1.10.1
 	github.com/urfave/cli/v2 v2.1.1
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
@@ -23,4 +27,4 @@ require (
 	honnef.co/go/tools v0.0.1-2020.1.3 // indirect
 )
 
-go 1.14
+go 1.15

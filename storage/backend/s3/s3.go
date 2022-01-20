@@ -2,17 +2,16 @@ package s3
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
-	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 
@@ -21,58 +20,24 @@ import (
 
 // Backend implements storage.Backend for AWs S3.
 type Backend struct {
-	logger log.Logger
-
+	logger     log.Logger
 	bucket     string
 	acl        string
 	encryption string
-	client     *s3.S3
+	client     *s3.Client
 }
 
 // New creates an S3 backend.
 func New(l log.Logger, c Config, debug bool) (*Backend, error) {
-	conf := &aws.Config{
-		Region:           aws.String(c.Region),
-		Endpoint:         &c.Endpoint,
-		DisableSSL:       aws.Bool(!strings.HasPrefix(c.Endpoint, "https://")),
-		S3ForcePathStyle: aws.Bool(c.PathStyle),
+	cfg, err := config.LoadDefaultConfig(context.TODO(),
+		config.WithRegion(c.Region),
+	)
+
+	if err != nil {
+		level.Error(l).Log("err", err)
 	}
 
-	// Use anonymous credentials if the S3 bucket is public
-	if c.Public {
-		conf.Credentials = credentials.AnonymousCredentials
-	}
-
-	if c.Key != "" && c.Secret != "" {
-		conf.Credentials = credentials.NewStaticCredentials(c.Key, c.Secret, "")
-	} else {
-		level.Warn(l).Log("msg", "aws key and/or Secret not provided (falling back to anonymous credentials)")
-	}
-
-	if c.RoleArn != "" {
-		stsConf := conf
-		if c.StsEndpoint != "" {
-			stsConf = conf.Copy(&aws.Config{
-				Endpoint:   &c.StsEndpoint,
-				DisableSSL: aws.Bool(!strings.HasPrefix(c.StsEndpoint, "https://")),
-			})
-		} else {
-			stsConf.Endpoint = nil
-			stsConf.DisableSSL = nil
-		}
-
-		conf.Credentials = credentials.NewStaticCredentials(c.Key, c.Secret, "")
-		crds := assumeRole(l, stsConf, c.RoleArn)
-		conf.Credentials = credentials.NewStaticCredentials(crds.AccessKeyID, crds.SecretAccessKey, crds.SessionToken)
-	}
-
-	level.Debug(l).Log("msg", "s3 backend", "config", fmt.Sprintf("%#v", c))
-
-	if debug {
-		conf.WithLogLevel(aws.LogDebugWithHTTPBody)
-	}
-
-	client := s3.New(session.Must(session.NewSessionWithOptions(session.Options{})), conf)
+	client := s3.NewFromConfig(cfg)
 
 	return &Backend{
 		logger:     l,
@@ -95,7 +60,7 @@ func (b *Backend) Get(ctx context.Context, p string, w io.Writer) error {
 	go func() {
 		defer close(errCh)
 
-		out, err := b.client.GetObjectWithContext(ctx, in)
+		out, err := b.client.GetObject(ctx, in)
 		if err != nil {
 			errCh <- fmt.Errorf("get the object, %w", err)
 			return
@@ -119,21 +84,22 @@ func (b *Backend) Get(ctx context.Context, p string, w io.Writer) error {
 
 // Put uploads contents of the given reader.
 func (b *Backend) Put(ctx context.Context, p string, r io.Reader) error {
-	var (
-		uploader = s3manager.NewUploaderWithClient(b.client)
-		in       = &s3manager.UploadInput{
-			Bucket: aws.String(b.bucket),
-			Key:    aws.String(p),
-			ACL:    aws.String(b.acl),
-			Body:   r,
-		}
-	)
-
-	if b.encryption != "" {
-		in.ServerSideEncryption = aws.String(b.encryption)
+	in := &s3.PutObjectInput{
+		Bucket: aws.String(b.bucket),
+		Key:    aws.String(p),
+		//TODO
+		//ACL:    aws.String( types.ObjectCannedACL b.acl),
+		Body: r,
 	}
 
-	if _, err := uploader.UploadWithContext(ctx, in); err != nil {
+	uploader := manager.NewUploader(b.client)
+
+	//TODO
+	//if b.encryption != "" {
+	//	in.ServerSideEncryption = aws.String(b.encryption)
+	//}
+
+	if _, err := uploader.Upload(ctx, in); err != nil {
 		return fmt.Errorf("put the object, %w", err)
 	}
 
@@ -147,9 +113,11 @@ func (b *Backend) Exists(ctx context.Context, p string) (bool, error) {
 		Key:    aws.String(p),
 	}
 
-	out, err := b.client.HeadObjectWithContext(ctx, in)
+	out, err := b.client.HeadObject(ctx, in)
 	if err != nil {
-		if awsErr, ok := err.(awserr.Error); ok && awsErr.Code() == s3.ErrCodeNoSuchKey || awsErr.Code() == "NotFound" {
+		var nsk *types.NoSuchKey
+		//TODO
+		if errors.As(err, *nsk) {
 			return false, nil
 		}
 
@@ -159,28 +127,4 @@ func (b *Backend) Exists(ctx context.Context, p string) (bool, error) {
 	// Normally if file not exists it will be already detected by error above but in some cases
 	// Minio can return success status for without ETag, detect that here.
 	return *out.ETag != "", nil
-}
-
-func assumeRole(l log.Logger, c *aws.Config, roleArn string) credentials.Value {
-	sess, err := session.NewSession(&aws.Config{
-		Credentials:                   c.Credentials,
-		Region:                        c.Region,
-		Endpoint:                      c.Endpoint,
-		DisableSSL:                    c.DisableSSL,
-		CredentialsChainVerboseErrors: aws.Bool(true),
-	})
-
-	if err != nil {
-		level.Error(l).Log("msg", "s3 backend", "assume-role", err.Error())
-	}
-
-	creds, err := stscreds.NewCredentials(sess, roleArn, func(p *stscreds.AssumeRoleProvider) {
-		p.RoleSessionName = "drone-cache"
-	}).Get()
-
-	if err != nil {
-		level.Error(l).Log("msg", "s3 backend", "assume-role", err.Error())
-	}
-
-	return creds
 }
