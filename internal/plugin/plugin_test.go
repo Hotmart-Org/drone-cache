@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package plugin
@@ -15,10 +16,8 @@ import (
 	"time"
 
 	gcstorage "cloud.google.com/go/storage"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	awss3 "github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/go-kit/kit/log"
 	pkgsftp "github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"

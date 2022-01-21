@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package s3
@@ -10,10 +11,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+
 	"github.com/go-kit/kit/log"
 
 	"github.com/meltwater/drone-cache/test"
@@ -24,16 +24,16 @@ const (
 	defaultAccessKey           = "AKIAIOSFODNN7EXAMPLE"
 	defaultSecretAccessKey     = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
 	defaultRegion              = "eu-west-1"
-	defaultACL             	   = "private"
-	defaultUserAccessKey   	   = "foo"
+	defaultACL                 = "private"
+	defaultUserAccessKey       = "foo"
 	defaultUserSecretAccessKey = "barbarbar"
 )
 
 var (
-	endpoint        	= getEnv("TEST_S3_ENDPOINT", defaultEndpoint)
-	accessKey       	= getEnv("TEST_S3_ACCESS_KEY", defaultAccessKey)
-	secretAccessKey 	= getEnv("TEST_S3_SECRET_KEY", defaultSecretAccessKey)
-	acl             	= getEnv("TEST_S3_ACL", defaultACL)
+	endpoint            = getEnv("TEST_S3_ENDPOINT", defaultEndpoint)
+	accessKey           = getEnv("TEST_S3_ACCESS_KEY", defaultAccessKey)
+	secretAccessKey     = getEnv("TEST_S3_SECRET_KEY", defaultSecretAccessKey)
+	acl                 = getEnv("TEST_S3_ACL", defaultACL)
 	userAccessKey       = getEnv("TEST_USER_S3_ACCESS_KEY", defaultUserAccessKey)
 	userSecretAccessKey = getEnv("TEST_USER_S3_SECRET_KEY", defaultUserSecretAccessKey)
 )
@@ -58,15 +58,15 @@ func TestRoundTripWithAssumeRole(t *testing.T) {
 	t.Parallel()
 
 	backend, cleanUp := setup(t, Config{
-		ACL:       acl,
-		Bucket:    "s3-round-trip-with-role",
-		Endpoint:  endpoint,
+		ACL:         acl,
+		Bucket:      "s3-round-trip-with-role",
+		Endpoint:    endpoint,
 		StsEndpoint: endpoint,
-		Key:       userAccessKey,
-		PathStyle: true, // Should be true for minio and false for AWS.
-		Region:    defaultRegion,
-		Secret:    userSecretAccessKey,
-		RoleArn:   "arn:aws:iam::account-id:role/TestRole",
+		Key:         userAccessKey,
+		PathStyle:   true, // Should be true for minio and false for AWS.
+		Region:      defaultRegion,
+		Secret:      userSecretAccessKey,
+		RoleArn:     "arn:aws:iam::account-id:role/TestRole",
 	})
 	t.Cleanup(cleanUp)
 	roundTrip(t, backend)
