@@ -347,6 +347,12 @@ func main() {
 			Usage:   "AWS bucket region. (us-east-1, eu-west-1, ...)",
 			EnvVars: []string{"PLUGIN_REGION", "S3_REGION"},
 		},
+		&cli.StringFlag{
+			Name:    "profile, pf",
+			Usage:   "AWS profile (default: 'default')",
+			Value:   "default",
+			EnvVars: []string{"PLUGIN_PROFILE", "AWS_PROFILE", "AWS_DEFAULT_PROFILE"},
+		},
 		&cli.BoolFlag{
 			Name:    "path-style, ps",
 			Usage:   "AWS path style to use for bucket paths. (true for minio, false for aws)",
@@ -553,6 +559,7 @@ func run(c *cli.Context) error {
 			PathStyle:   c.Bool("path-style"),
 			Public:      c.Bool("s3-bucket-public"),
 			Region:      c.String("region"),
+			Profile:     c.String("profile"),
 			Secret:      c.String("secret-key"),
 			StsEndpoint: c.String("sts-endpoint"),
 			RoleArn:     c.String("role-arn"),

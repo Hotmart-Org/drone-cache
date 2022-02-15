@@ -27,6 +27,7 @@ type Config struct {
 	// ap-northeast-1
 	// sa-east-1
 	Region string
+	Profile string
 	Secret string
 
 	PathStyle bool // Use path style instead of domain style. Should be true for minio and false for AWS.
