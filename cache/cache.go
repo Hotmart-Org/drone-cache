@@ -21,19 +21,19 @@ type Cache interface {
 // Rebuilder is an interface represents a rebuild action.
 type Rebuilder interface {
 	// Rebuild rebuilds cache from the files provided with given paths.
-	Rebuild(srcs []string) error
+	Rebuild(srcs []string, localRoot string) error
 }
 
 // Restorer is an interface represents a restore action.
 type Restorer interface {
 	// Restore restores files from the cache provided with given paths.
-	Restore(srcs []string) error
+	Restore(srcs []string, localRoot string) error
 }
 
 // Flusher is an interface represents a flush action.
 type Flusher interface {
 	// Flush removes files from the cache using given paths.
-	Flush(srcs []string) error
+	Flush(srcs []string, localRoot string) error
 }
 
 type cache struct {

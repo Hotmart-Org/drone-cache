@@ -33,7 +33,7 @@ func NewRestorer(logger log.Logger, s storage.Storage, a archive.Archive, g key.
 }
 
 // Restore restores files from the cache provided with given paths.
-func (r restorer) Restore(dsts []string) error {
+func (r restorer) Restore(dsts []string, localRoot string) error {
 	level.Info(r.logger).Log("msg", "restoring  cache")
 
 	now := time.Now()

@@ -36,7 +36,7 @@ func NewRebuilder(logger log.Logger, s storage.Storage, a archive.Archive, g key
 }
 
 // Rebuild rebuilds cache from the files provided with given paths.
-func (r rebuilder) Rebuild(srcs []string) error {
+func (r rebuilder) Rebuild(srcs []string, localRoot string) error {
 	level.Info(r.logger).Log("msg", "rebuilding cache")
 
 	now := time.Now()
@@ -53,11 +53,15 @@ func (r rebuilder) Rebuild(srcs []string) error {
 	)
 
 	for _, src := range srcs {
+
+		dst := filepath.Join(namespace, key, src)
+		src := filepath.Join(localRoot, src)
+
+		level.Info(r.logger).Log("msg", "rebuilding directory", "local", src, "remote", dst)
+
 		if _, err := os.Lstat(src); err != nil {
 			return fmt.Errorf("source <%s>, make sure file or directory exists and readable, %w", src, err)
 		}
-
-		dst := filepath.Join(namespace, key, src)
 
 		// If no override is set and object already exists in storage, skip it.
 		if !r.override {

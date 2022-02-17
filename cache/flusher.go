@@ -3,6 +3,7 @@ package cache
 import (
 	"fmt"
 	"time"
+	"path/filepath"
 
 	"github.com/meltwater/drone-cache/storage"
 	"github.com/meltwater/drone-cache/storage/backend"
@@ -24,9 +25,11 @@ func NewFlusher(logger log.Logger, s storage.Storage, ttl time.Duration) Flusher
 }
 
 // Flush cleans the expired files from the cache.
-func (f flusher) Flush(srcs []string) error {
+func (f flusher) Flush(srcs []string, localRoot string) error {
 	for _, src := range srcs {
-		level.Info(f.logger).Log("msg", "Cleaning files", "src", src)
+
+		src := filepath.Join(localRoot, src)
+		level.Info(f.logger).Log("msg", "flushing files", "src", src)
 
 		files, err := f.store.List(src)
 		if err != nil {
