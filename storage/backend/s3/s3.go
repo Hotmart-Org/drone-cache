@@ -34,8 +34,6 @@ func New(l log.Logger, c Config, debug bool) (*Backend, error) {
 		config.WithSharedConfigProfile(c.Profile),
 	)
 
-	level.Info(l).Log("cfg", cfg)
-
 	if err != nil {
 		level.Error(l).Log("err", err)
 	}
