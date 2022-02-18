@@ -23,7 +23,7 @@ steps:
     << : *go-image
     commands:
       - go mod tidy
-      - go build -o cache -ldflags="-X 'github.com/Hotmart-Org/drone-cache/core.Version=$DRONE_TAG'"
+      - go build -o drone-cache -ldflags="-X 'github.com/Hotmart-Org/drone-cache/core.Version=$DRONE_TAG'"
     environment:
       GOOS: linux
       GARCH: amd64
@@ -35,7 +35,7 @@ steps:
     image: public.ecr.aws/hotmart/pipeline-utils:latest
     commands:
       - apk add zip
-      - zip -j linux.zip cache
+      - zip -j linux.zip drone-cache
     depends_on:
       - build-linux
 
