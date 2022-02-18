@@ -1,6 +1,7 @@
 ---
 kind: pipeline
-name: default
+name: release
+type: kubernetes
 
 platform:
   os: linux
