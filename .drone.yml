@@ -7,12 +7,16 @@ platform:
   os: linux
   arch: amd64
 
-clone:
-  depth: 50
+concurrency:
+  limit: 1
 
 anchors:
   - &go-image
     image: golang:1.16
+
+trigger:
+  event:
+    - tag
 
 steps:
   - name: build-linux
@@ -45,7 +49,10 @@ steps:
         from_secret: github_token
     depends_on:
       - build-zip
-
-trigger:
-  event:
-    - tag
+    
+---
+kind: secret
+name: github_token
+get:
+  path: kv/data/drone/github
+  name: token
