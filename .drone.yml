@@ -31,7 +31,7 @@ steps:
     image: public.ecr.aws/hotmart/pipeline-utils:latest
     commands:
       - apk add zip
-      - zip -j linux.zip cache
+      - zip linux.zip cache
     depends_on:
       - build-linux
 
