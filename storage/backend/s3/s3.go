@@ -29,10 +29,20 @@ type Backend struct {
 
 // New creates an S3 backend.
 func New(l log.Logger, c Config, debug bool) (*Backend, error) {
-	cfg, err := config.LoadDefaultConfig(context.TODO(),
-		config.WithRegion(c.Region), 
-		config.WithSharedConfigProfile(c.Profile),
-	)
+
+	var cfg aws.Config
+	var err error
+
+	if c.Profile != "" {
+		cfg, err = config.LoadDefaultConfig(context.TODO(),
+			config.WithRegion(c.Region), 
+			config.WithSharedConfigProfile(c.Profile),
+		)
+	} else {
+		cfg, err = config.LoadDefaultConfig(context.TODO(),
+			config.WithRegion(c.Region), 
+		)
+	}
 
 	if err != nil {
 		level.Error(l).Log("err", err)

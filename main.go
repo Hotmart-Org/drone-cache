@@ -350,7 +350,6 @@ func main() {
 		&cli.StringFlag{
 			Name:    "profile, pf",
 			Usage:   "AWS profile (default: 'default')",
-			Value:   "default",
 			EnvVars: []string{"PLUGIN_PROFILE", "AWS_PROFILE", "AWS_DEFAULT_PROFILE"},
 		},
 		&cli.BoolFlag{
