@@ -1,0 +1,21 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: drone-cache
+  description:''
+  tags: []
+  annotations:
+    github.com/project-slug: Hotmart-Org/drone-cache
+    backstage.io/techdocs-ref: dir:.
+  links: []
+spec:
+  type: service
+  lifecycle: production
+  owner: devops_squad
+  system: ''
+  heimdall:
+    reportable: false
+    pci: false
+    products: []
+    squads: []
+   impact: ''
