@@ -2,7 +2,7 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: drone-cache
-  description:''
+  description: ''
   tags: []
   annotations:
     github.com/project-slug: Hotmart-Org/drone-cache
@@ -18,4 +18,4 @@ spec:
     pci: false
     products: []
     squads: []
-   impact: ''
+    impact: ''
