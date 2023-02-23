@@ -12,7 +12,6 @@ spec:
   type: service
   lifecycle: production
   owner: devops_squad
-  system: ''
   heimdall:
     reportable: false
     pci: false
