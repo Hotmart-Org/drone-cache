@@ -64,6 +64,7 @@ steps:
     image: drone-cache:MyTestTag
     pull: if-not-exists
     settings:
+      cache_key: '{{ checksum "pom.xml" }}'
       bucket: drone-cache-bucket
       mount:
         - vendor
@@ -181,6 +182,7 @@ steps:
     image: drone-cache:MyTestTag
     pull: if-not-exists
     settings:
+      cache_key: '{{ checksum "pom.xml" }}'
       debug: true
       restore: true
       pull: always
@@ -189,7 +191,7 @@ steps:
     image: drone-cache:MyTestTag
     pull: if-not-exists
     settings:
-      bucket: drone-cache-bucket
+      cache_key: '{{ checksum "pom.xml" }}'
       mount:
         - vendor
       region: eu-west-1
@@ -241,5 +243,5 @@ trigger:
   branch:
     - master
   event:
-    - 
+    -
 ...
